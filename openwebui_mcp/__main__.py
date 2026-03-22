@@ -518,7 +518,7 @@ async def delete_all_files(ctx: Context) -> dict[str, Any]:
 
 
 @mcp.tool()
-async def list_prompts(ctx: Context) -> dict[str, Any]:
+async def list_prompts(ctx: Context) -> list[dict[str, Any]]:
     """List all prompts in OpenWebUI with their commands, titles, tags, and active status"""
     return await get_client().list_prompts(get_user_token())
 

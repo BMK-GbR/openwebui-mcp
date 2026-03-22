@@ -310,7 +310,7 @@ class OpenWebUIClient:
     # Prompt Management
     # ==========================================================================
 
-    async def list_prompts(self, api_key: Optional[str] = None) -> dict:
+    async def list_prompts(self, api_key: Optional[str] = None) -> list:
         """List all prompts."""
         return await self.get("/api/v1/prompts/", api_key)
 
