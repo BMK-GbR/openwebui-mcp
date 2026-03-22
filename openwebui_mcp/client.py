@@ -64,6 +64,8 @@ class OpenWebUIClient:
                 data = response.json()
                 if isinstance(data, list):
                     return {"items": data}
+                if not isinstance(data, dict):
+                    return {"result": data}
                 return data
             return {"text": response.text}
 
@@ -324,11 +326,10 @@ class OpenWebUIClient:
     ) -> dict:
         """Create a new prompt."""
         path_command = command.lstrip("/")
-        body_command = f"/{path_command}"
         return await self.post(
             "/api/v1/prompts/create",
             api_key,
-            json={"command": body_command, "name": title, "content": content},
+            json={"command": path_command, "name": title, "content": content},
         )
 
     async def get_prompt(self, command: str, api_key: Optional[str] = None) -> dict:
@@ -350,9 +351,8 @@ class OpenWebUIClient:
         prompt_id = existing.get("id")
         if not prompt_id:
             raise ValueError(f"Prompt with command '{path_command}' not found")
-        body_command = f"/{path_command}"
         data = {
-            "command": body_command,
+            "command": path_command,
             "name": title if title is not None else existing.get("name", ""),
             "content": content if content is not None else existing.get("content", ""),
         }
