@@ -152,6 +152,7 @@ class PromptCreateParam(BaseModel):
     command: str = Field(description="Command trigger with leading slash (e.g., '/summarize')")
     title: str = Field(description="Prompt title")
     content: str = Field(description="Prompt template content")
+    commit_message: str = Field(default="Initial version", description="Brief description of what this prompt does (used as version history message)")
 
 
 class PromptIdParam(BaseModel):
@@ -162,6 +163,7 @@ class PromptUpdateParam(BaseModel):
     command: str = Field(description="Command (without leading slash)")
     title: Optional[str] = Field(default=None, description="New title")
     content: Optional[str] = Field(default=None, description="New content")
+    commit_message: str = Field(default="Updated", description="Brief description of what changed (used as version history message, e.g. 'Fixed tone', 'Added context about X')")
 
 
 class MemoryAddParam(BaseModel):
@@ -525,9 +527,13 @@ async def list_prompts(ctx: Context) -> list[dict[str, Any]]:
 
 @mcp.tool()
 async def create_prompt(params: PromptCreateParam, ctx: Context) -> dict[str, Any]:
-    """Create a new prompt with a command (slash prefix), title, and content"""
+    """Create a new prompt with a command (slash prefix), title, and content.
+
+    Always provide a brief commit_message summarising what the prompt does
+    (e.g. 'Summarises long articles into 3 bullet points').
+    """
     return await get_client().create_prompt(
-        params.command, params.title, params.content, get_user_token()
+        params.command, params.title, params.content, params.commit_message, get_user_token()
     )
 
 
@@ -545,9 +551,11 @@ async def update_prompt(params: PromptUpdateParam, ctx: Context) -> dict[str, An
     """Update an existing prompt's title and/or content by command name.
 
     Pass command WITHOUT a leading slash.
+    Always provide a brief commit_message describing what changed
+    (e.g. 'Adjusted tone to be more formal', 'Added step-by-step structure').
     """
     return await get_client().update_prompt(
-        params.command, params.title, params.content, get_user_token()
+        params.command, params.title, params.content, params.commit_message, get_user_token()
     )
 
 

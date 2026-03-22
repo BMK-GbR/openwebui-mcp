@@ -322,6 +322,7 @@ class OpenWebUIClient:
         command: str,
         title: str,
         content: str,
+        commit_message: str = "Initial version",
         api_key: Optional[str] = None,
     ) -> dict:
         """Create a new prompt."""
@@ -329,7 +330,7 @@ class OpenWebUIClient:
         return await self.post(
             "/api/v1/prompts/create",
             api_key,
-            json={"command": path_command, "name": title, "content": content},
+            json={"command": path_command, "name": title, "content": content, "commit_message": commit_message},
         )
 
     async def get_prompt(self, command: str, api_key: Optional[str] = None) -> dict:
@@ -342,6 +343,7 @@ class OpenWebUIClient:
         command: str,
         title: Optional[str] = None,
         content: Optional[str] = None,
+        commit_message: str = "Updated",
         api_key: Optional[str] = None,
     ) -> dict:
         """Update a prompt by fetching its ID first, then posting the update."""
@@ -355,6 +357,7 @@ class OpenWebUIClient:
             "command": path_command,
             "name": title if title is not None else existing.get("name", ""),
             "content": content if content is not None else existing.get("content", ""),
+            "commit_message": commit_message,
         }
         return await self.post(
             f"/api/v1/prompts/id/{prompt_id}/update",
