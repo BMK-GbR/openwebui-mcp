@@ -921,7 +921,8 @@ def main():
     path = os.getenv("MCP_HTTP_PATH", "/mcp")
 
     if transport == "http":
-        app = mcp.http_app(path=path)
+        stateless = os.getenv("MCP_STATELESS_HTTP", "true").lower() != "false"
+        app = mcp.http_app(path=path, stateless_http=stateless)
         app = AuthMiddleware(app)
         print(f"Starting Open WebUI MCP server on http://{host}:{port}{path}")
         uvicorn.run(app, host=host, port=port)
