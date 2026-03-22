@@ -312,7 +312,8 @@ class OpenWebUIClient:
 
     async def list_prompts(self, api_key: Optional[str] = None) -> list:
         """List all prompts."""
-        return await self.get("/api/v1/prompts/", api_key)
+        result = await self.get("/api/v1/prompts/", api_key)
+        return result.get("items", [])
 
     async def create_prompt(
         self,
