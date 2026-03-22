@@ -101,7 +101,7 @@ class OpenWebUIClient:
     ) -> dict:
         """Update a user's role (admin only)."""
         return await self.post(
-            f"/api/v1/users/{user_id}/update/role",
+            f"/api/v1/users/{user_id}/update",
             api_key,
             json={"role": role},
         )
@@ -169,7 +169,7 @@ class OpenWebUIClient:
 
     async def delete_group(self, group_id: str, api_key: Optional[str] = None) -> dict:
         """Delete a group (admin only)."""
-        return await self.delete(f"/api/v1/groups/id/{group_id}", api_key)
+        return await self.delete(f"/api/v1/groups/id/{group_id}/delete", api_key)
 
     # ==========================================================================
     # Model Management
@@ -181,7 +181,7 @@ class OpenWebUIClient:
 
     async def get_model(self, model_id: str, api_key: Optional[str] = None) -> dict:
         """Get a specific model."""
-        return await self.get(f"/api/v1/models/{model_id}", api_key)
+        return await self.get(f"/api/v1/models/model?id={model_id}", api_key)
 
     async def create_model(
         self,
@@ -218,11 +218,11 @@ class OpenWebUIClient:
             data["meta"] = meta
         if params is not None:
             data["params"] = params
-        return await self.post(f"/api/v1/models/{model_id}/update", api_key, json=data)
+        return await self.post(f"/api/v1/models/model/update?id={model_id}", api_key, json=data)
 
     async def delete_model(self, model_id: str, api_key: Optional[str] = None) -> dict:
         """Delete a model (admin only)."""
-        return await self.delete(f"/api/v1/models/{model_id}", api_key)
+        return await self.post(f"/api/v1/models/model/delete?id={model_id}", api_key)
 
     # ==========================================================================
     # Knowledge Base Management
@@ -266,7 +266,7 @@ class OpenWebUIClient:
 
     async def delete_knowledge(self, knowledge_id: str, api_key: Optional[str] = None) -> dict:
         """Delete a knowledge base."""
-        return await self.delete(f"/api/v1/knowledge/{knowledge_id}", api_key)
+        return await self.delete(f"/api/v1/knowledge/{knowledge_id}/delete", api_key)
 
     # ==========================================================================
     # File Management
@@ -328,7 +328,7 @@ class OpenWebUIClient:
         return await self.post(
             "/api/v1/prompts/create",
             api_key,
-            json={"command": body_command, "title": title, "content": content},
+            json={"command": body_command, "name": title, "content": content},
         )
 
     async def get_prompt(self, command: str, api_key: Optional[str] = None) -> dict:
@@ -343,24 +343,33 @@ class OpenWebUIClient:
         content: Optional[str] = None,
         api_key: Optional[str] = None,
     ) -> dict:
-        """Update a prompt."""
+        """Update a prompt by fetching its ID first, then posting the update."""
         path_command = command.lstrip("/")
+        # Fetch the prompt to get its internal ID
+        existing = await self.get(f"/api/v1/prompts/command/{path_command}", api_key)
+        prompt_id = existing.get("id")
+        if not prompt_id:
+            raise ValueError(f"Prompt with command '{path_command}' not found")
         body_command = f"/{path_command}"
-        data = {"command": body_command}
-        if title is not None:
-            data["title"] = title
-        if content is not None:
-            data["content"] = content
-        return await self.put(
-            f"/api/v1/prompts/command/{path_command}/update",
+        data = {
+            "command": body_command,
+            "name": title if title is not None else existing.get("name", ""),
+            "content": content if content is not None else existing.get("content", ""),
+        }
+        return await self.post(
+            f"/api/v1/prompts/id/{prompt_id}/update",
             api_key,
             json=data,
         )
 
     async def delete_prompt(self, command: str, api_key: Optional[str] = None) -> dict:
-        """Delete a prompt."""
+        """Delete a prompt by fetching its ID first, then deleting."""
         path_command = command.lstrip("/")
-        return await self.delete(f"/api/v1/prompts/command/{path_command}/delete", api_key)
+        existing = await self.get(f"/api/v1/prompts/command/{path_command}", api_key)
+        prompt_id = existing.get("id")
+        if not prompt_id:
+            raise ValueError(f"Prompt with command '{path_command}' not found")
+        return await self.delete(f"/api/v1/prompts/id/{prompt_id}/delete", api_key)
 
     # ==========================================================================
     # Memory Management
@@ -420,15 +429,15 @@ class OpenWebUIClient:
 
     async def archive_chat(self, chat_id: str, api_key: Optional[str] = None) -> dict:
         """Archive a chat."""
-        return await self.get(f"/api/v1/chats/{chat_id}/archive", api_key)
+        return await self.post(f"/api/v1/chats/{chat_id}/archive", api_key)
 
     async def share_chat(self, chat_id: str, api_key: Optional[str] = None) -> dict:
         """Share a chat (make public)."""
         return await self.post(f"/api/v1/chats/{chat_id}/share", api_key)
 
     async def clone_chat(self, chat_id: str, api_key: Optional[str] = None) -> dict:
-        """Clone a shared chat."""
-        return await self.get(f"/api/v1/chats/{chat_id}/clone", api_key)
+        """Clone a chat."""
+        return await self.post(f"/api/v1/chats/{chat_id}/clone", api_key)
 
     # ==========================================================================
     # Folder Management
@@ -440,7 +449,7 @@ class OpenWebUIClient:
 
     async def create_folder(self, name: str, api_key: Optional[str] = None) -> dict:
         """Create a new folder."""
-        return await self.post("/api/v1/folders/create", api_key, json={"name": name})
+        return await self.post("/api/v1/folders/", api_key, json={"name": name})
 
     async def get_folder(self, folder_id: str, api_key: Optional[str] = None) -> dict:
         """Get a specific folder."""
@@ -500,7 +509,7 @@ class OpenWebUIClient:
 
     async def delete_tool(self, tool_id: str, api_key: Optional[str] = None) -> dict:
         """Delete a tool."""
-        return await self.delete(f"/api/v1/tools/id/{tool_id}", api_key)
+        return await self.delete(f"/api/v1/tools/id/{tool_id}/delete", api_key)
 
     # ==========================================================================
     # Function Management
@@ -553,15 +562,15 @@ class OpenWebUIClient:
 
     async def delete_function(self, function_id: str, api_key: Optional[str] = None) -> dict:
         """Delete a function."""
-        return await self.delete(f"/api/v1/functions/id/{function_id}", api_key)
+        return await self.delete(f"/api/v1/functions/id/{function_id}/delete", api_key)
 
     # ==========================================================================
     # Config/Settings (Admin)
     # ==========================================================================
 
     async def get_config(self, api_key: Optional[str] = None) -> dict:
-        """Get system configuration (admin only)."""
-        return await self.get("/api/v1/configs/", api_key)
+        """Export full system configuration (admin only)."""
+        return await self.get("/api/v1/configs/export", api_key)
 
     async def export_config(self, api_key: Optional[str] = None) -> dict:
         """Export full configuration (admin only)."""
