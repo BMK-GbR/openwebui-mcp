@@ -61,7 +61,10 @@ class OpenWebUIClient:
             response.raise_for_status()
 
             if response.headers.get("content-type", "").startswith("application/json"):
-                return response.json()
+                data = response.json()
+                if isinstance(data, list):
+                    return {"items": data}
+                return data
             return {"text": response.text}
 
     # Convenience methods
