@@ -1,4 +1,4 @@
-# Open WebUI MCP Server
+# Open WebUI MCP
 
 An MCP (Model Context Protocol) server that exposes Open WebUI's admin APIs as tools, allowing AI assistants to manage users, groups, models, knowledge bases, and more.
 

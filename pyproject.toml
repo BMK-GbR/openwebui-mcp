@@ -1,5 +1,5 @@
 [project]
-name = "openwebui-mcp-server"
+name = "openwebui-mcp"
 version = "0.0.0-dev"
 description = "MCP server for managing Open WebUI - users, groups, models, knowledge bases, and more"
 readme = "README.md"
