@@ -351,7 +351,7 @@ class OpenWebUIClient:
             data["title"] = title
         if content is not None:
             data["content"] = content
-        return await self.post(
+        return await self.put(
             f"/api/v1/prompts/command/{path_command}/update",
             api_key,
             json=data,
