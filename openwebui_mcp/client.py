@@ -28,9 +28,7 @@ class OpenWebUIClient:
         self.api_key = api_key or os.getenv("OPENWEBUI_API_KEY", "")
 
         if not self.base_url:
-            raise ValueError(
-                "Open WebUI URL required. Set OPENWEBUI_URL env var or pass base_url."
-            )
+            raise ValueError("Open WebUI URL required. Set OPENWEBUI_URL env var or pass base_url.")
 
     def _get_headers(self, api_key: Optional[str] = None) -> dict[str, str]:
         """Get request headers with authentication."""
@@ -310,7 +308,7 @@ class OpenWebUIClient:
     # ==========================================================================
 
     async def list_prompts(self, api_key: Optional[str] = None) -> dict:
-        """List all prompts/templates."""
+        """List all prompts."""
         return await self.get("/api/v1/prompts/", api_key)
 
     async def create_prompt(
@@ -320,16 +318,19 @@ class OpenWebUIClient:
         content: str,
         api_key: Optional[str] = None,
     ) -> dict:
-        """Create a new prompt template."""
+        """Create a new prompt."""
+        path_command = command.lstrip("/")
+        body_command = f"/{path_command}"
         return await self.post(
             "/api/v1/prompts/create",
             api_key,
-            json={"command": command, "title": title, "content": content},
+            json={"command": body_command, "title": title, "content": content},
         )
 
     async def get_prompt(self, command: str, api_key: Optional[str] = None) -> dict:
         """Get a prompt by command (without leading slash)."""
-        return await self.get(f"/api/v1/prompts/command/{command}", api_key)
+        path_command = command.lstrip("/")
+        return await self.get(f"/api/v1/prompts/command/{path_command}", api_key)
 
     async def update_prompt(
         self,
@@ -338,17 +339,24 @@ class OpenWebUIClient:
         content: Optional[str] = None,
         api_key: Optional[str] = None,
     ) -> dict:
-        """Update a prompt template."""
-        data = {"command": f"/{command}"}
+        """Update a prompt."""
+        path_command = command.lstrip("/")
+        body_command = f"/{path_command}"
+        data = {"command": body_command}
         if title is not None:
             data["title"] = title
         if content is not None:
             data["content"] = content
-        return await self.post(f"/api/v1/prompts/command/{command}/update", api_key, json=data)
+        return await self.post(
+            f"/api/v1/prompts/command/{path_command}/update",
+            api_key,
+            json=data,
+        )
 
     async def delete_prompt(self, command: str, api_key: Optional[str] = None) -> dict:
-        """Delete a prompt template."""
-        return await self.delete(f"/api/v1/prompts/command/{command}/delete", api_key)
+        """Delete a prompt."""
+        path_command = command.lstrip("/")
+        return await self.delete(f"/api/v1/prompts/command/{path_command}/delete", api_key)
 
     # ==========================================================================
     # Memory Management
@@ -362,13 +370,9 @@ class OpenWebUIClient:
         """Add a new memory."""
         return await self.post("/api/v1/memories/add", api_key, json={"content": content})
 
-    async def query_memories(
-        self, content: str, k: int = 5, api_key: Optional[str] = None
-    ) -> dict:
+    async def query_memories(self, content: str, k: int = 5, api_key: Optional[str] = None) -> dict:
         """Query memories using semantic search."""
-        return await self.post(
-            "/api/v1/memories/query", api_key, json={"content": content, "k": k}
-        )
+        return await self.post("/api/v1/memories/query", api_key, json={"content": content, "k": k})
 
     async def update_memory(
         self, memory_id: str, content: str, api_key: Optional[str] = None
@@ -438,13 +442,9 @@ class OpenWebUIClient:
         """Get a specific folder."""
         return await self.get(f"/api/v1/folders/{folder_id}", api_key)
 
-    async def update_folder(
-        self, folder_id: str, name: str, api_key: Optional[str] = None
-    ) -> dict:
+    async def update_folder(self, folder_id: str, name: str, api_key: Optional[str] = None) -> dict:
         """Update a folder's name."""
-        return await self.post(
-            f"/api/v1/folders/{folder_id}/update", api_key, json={"name": name}
-        )
+        return await self.post(f"/api/v1/folders/{folder_id}/update", api_key, json={"name": name})
 
     async def delete_folder(self, folder_id: str, api_key: Optional[str] = None) -> dict:
         """Delete a folder."""
@@ -543,9 +543,7 @@ class OpenWebUIClient:
             data["meta"] = meta
         return await self.post(f"/api/v1/functions/id/{function_id}/update", api_key, json=data)
 
-    async def toggle_function(
-        self, function_id: str, api_key: Optional[str] = None
-    ) -> dict:
+    async def toggle_function(self, function_id: str, api_key: Optional[str] = None) -> dict:
         """Toggle a function's enabled state."""
         return await self.post(f"/api/v1/functions/id/{function_id}/toggle", api_key)
 
@@ -599,9 +597,7 @@ class OpenWebUIClient:
         """Get tool server connections (admin only)."""
         return await self.get("/api/v1/configs/tool_servers", api_key)
 
-    async def set_tool_servers(
-        self, connections: list, api_key: Optional[str] = None
-    ) -> dict:
+    async def set_tool_servers(self, connections: list, api_key: Optional[str] = None) -> dict:
         """Set tool server connections (admin only)."""
         return await self.post(
             "/api/v1/configs/tool_servers",

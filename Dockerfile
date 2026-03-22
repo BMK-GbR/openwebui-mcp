@@ -12,7 +12,7 @@ COPY pyproject.toml .
 RUN uv pip install --system fastmcp httpx pydantic uvicorn
 
 # Copy application code
-COPY src/ ./src/
+COPY openwebui_mcp/ ./openwebui_mcp/
 
 # Environment variables
 ENV PYTHONUNBUFFERED=1
@@ -25,4 +25,4 @@ ENV MCP_HTTP_PATH=/mcp
 EXPOSE 8000
 
 # Run the server
-CMD ["python", "-m", "src.openwebui_mcp.main"]
+CMD ["python", "-m", "openwebui_mcp"]

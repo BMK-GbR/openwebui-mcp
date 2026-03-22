@@ -8,6 +8,7 @@ An MCP (Model Context Protocol) server that exposes Open WebUI's admin APIs as t
 - **Group Management**: Create, update, add/remove members, delete groups
 - **Model Management**: Create custom models, update system prompts, manage parameters
 - **Knowledge Base Management**: Create, list, delete knowledge bases
+- **Prompt Management**: List, get, create, update, and delete prompts
 - **Chat Management**: List, view, delete chats
 - **Tool & Function Discovery**: List available tools and functions
 - **Permission-Aware**: All operations respect the logged-in user's permissions
@@ -45,6 +46,8 @@ Optionally, set a default API key (can be overridden per-request):
 ```bash
 export OPENWEBUI_API_KEY=your-api-key
 ```
+
+You can also place these values in a root `.env` file; the app loads it automatically at startup.
 
 ## Usage
 
@@ -145,6 +148,15 @@ model = await client.create_model(
 | `get_knowledge_base` | Get knowledge base details | Any |
 | `create_knowledge_base` | Create knowledge base | Any |
 | `delete_knowledge_base` | Delete knowledge base | Owner |
+
+### Prompt Management
+| Tool | Description | Permission |
+|------|-------------|------------|
+| `list_prompts` | List all prompts | Any |
+| `get_prompt` | Get a prompt by command | Any |
+| `create_prompt` | Create a new prompt | Any |
+| `update_prompt` | Update a prompt's title or content | Any |
+| `delete_prompt` | Delete a prompt by command | Any |
 
 ### Chat Management
 | Tool | Description | Permission |
